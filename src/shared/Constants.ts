@@ -9,3 +9,8 @@ export const AGRA_CORDINATE = {
   lat: 27.1767,
   lng: 78.0081,
 };
+
+export const JAIPUR_CORDINATE = {
+  lat: 26.9124, 
+  lng: 75.7873
+}

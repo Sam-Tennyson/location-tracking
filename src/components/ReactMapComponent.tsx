@@ -12,19 +12,36 @@ import ReactMapGl, {
   Source,
 } from "react-map-gl";
 import {
-  AGRA_CORDINATE,
+  JAIPUR_CORDINATE,
   DELHI_CORDINATE,
   MAP_ACCESS_TOKEN,
 } from "../shared/Constants";
+import { calculateBearing, getRandomNumber } from "../shared/Utils";
+
+const RANDOM_SPEED = {
+  min: 100,
+  max: 150,
+};
 
 const ReactMapComponent = () => {
-  const [start] = useState([DELHI_CORDINATE.lng, DELHI_CORDINATE.lat]);
-  const [end, setEnd] = useState([AGRA_CORDINATE.lng, AGRA_CORDINATE.lat]);
+  const [start, setStart] = useState<any>([
+    DELHI_CORDINATE.lng,
+    DELHI_CORDINATE.lat,
+  ]);
+  const [end, setEnd] = useState<any>([
+    JAIPUR_CORDINATE.lng,
+    JAIPUR_CORDINATE.lat,
+  ]);
   const [coords, setCoords] = useState<any>([]);
+
+  const [currentSpeed, setCurrentSpeed] = useState<number>(50);
+  const [speedController, setSpeedController] = useState<number>(0);
+  const [thresholdSpeed] = useState<number>(120);
+
   const [viewState, setViewState] = useState({
     longitude: DELHI_CORDINATE.lng,
     latitude: DELHI_CORDINATE.lat,
-    zoom: 5,
+    zoom: 7,
   });
 
   const getRoutes = async () => {
@@ -86,11 +103,51 @@ const ReactMapComponent = () => {
     },
   };
 
-  const handleClick = (e: { lngLat: { lng: number; lat: number } }) => {
-    const { lngLat } = e;
-    const { lng, lat } = lngLat;
-    setEnd([lng, lat]);
+  useEffect(() => {
+    let currentLng = DELHI_CORDINATE.lng;
+    let currentLat = DELHI_CORDINATE.lat;
+    const bearing = calculateBearing(start, end);
+
+    const intervalId = setInterval(() => {
+      const newLng =
+        currentLng +
+        (currentSpeed / 111320) * Math.cos((bearing * Math.PI) / 180);
+      const newLat =
+        currentLat +
+        (currentSpeed / 111320) * Math.sin((bearing * Math.PI) / 180);
+
+      setStart([newLng, newLat]);
+
+      currentLng = newLng;
+      currentLat = newLat;
+      const randomNumber = getRandomNumber(RANDOM_SPEED.min, RANDOM_SPEED.max);
+      setSpeedController(randomNumber);
+      // Code to run at regular intervals
+    }, 1000);
+
+    return () => clearInterval(intervalId); // Cleanup on component unmount
+  }, []);
+
+  const showMessage = () => {
+    if (currentSpeed > thresholdSpeed) {
+      return <div className=" text-red-600 text-lg font-bold">Warning ...</div>;
+    }
+    return (
+      <div className="text-green-600 text-lg font-bold">
+        Weldone. You are nice driver...
+      </div>
+    );
   };
+
+  // const handleClick = (e: { lngLat: { lng: number; lat: number } }) => {
+  //   const { lngLat } = e;
+  //   const { lng, lat } = lngLat;
+  //   setEnd([lng, lat]);
+  // };
+
+  useEffect(() => {
+    setCurrentSpeed(speedController);
+  }, [speedController]);
 
   useEffect(() => {
     getRoutes();
@@ -98,25 +155,38 @@ const ReactMapComponent = () => {
 
   return (
     <>
-      <ReactMapGl
-        {...viewState}
-        onClick={handleClick}
-        onMove={(evt) => setViewState(evt.viewState)}
-        mapboxAccessToken={MAP_ACCESS_TOKEN}
-        mapStyle={"mapbox://styles/mapbox/streets-v11"}
-        style={{ width: "100vw", height: "90vh" }}
-      >
-        <Source id="route-source" type="geojson" data={geojson}>
-          <Layer {...lineStyle} />
-        </Source>
-        <Source id="route-destination" type="geojson" data={endPoint}>
-          <Layer {...layerEndpoint} />
-        </Source>
-        <GeolocateControl />
-        <FullscreenControl />
-        <NavigationControl />
-        <Marker longitude={start[0]} latitude={start[1]} />
-      </ReactMapGl>
+      <div className="w-[90vw] min-h-screen m-auto">
+        <div className="text-center text-2xl py-4">
+          Zoom: {viewState.zoom} | Speed: {currentSpeed} | Threshold Speed:{" "}
+          {thresholdSpeed}
+          <div>{showMessage()}</div>
+        </div>
+        <ReactMapGl
+          {...viewState}
+          // onClick={handleClick}
+          onMove={(evt) => setViewState(evt.viewState)}
+          mapboxAccessToken={MAP_ACCESS_TOKEN}
+          mapStyle={"mapbox://styles/mapbox/streets-v11"}
+          style={{ width: "100%", height: "80vh", margin: "auto" }}
+        >
+          <Source id="route-source" type="geojson" data={geojson}>
+            <Layer {...lineStyle} />
+          </Source>
+          <Source id="route-destination" type="geojson" data={endPoint}>
+            <Layer {...layerEndpoint} />
+          </Source>
+          <GeolocateControl />
+          <FullscreenControl />
+          <NavigationControl />
+          <Marker longitude={start[0]} latitude={start[1]}>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/744/744465.png"
+              alt="Marker"
+              style={{ width: "40px", height: "40px" }}
+            />
+          </Marker>
+        </ReactMapGl>
+      </div>
     </>
   );
 };
