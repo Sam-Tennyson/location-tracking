@@ -28,10 +28,7 @@ const ReactMapComponent = () => {
     DELHI_CORDINATE.lng,
     DELHI_CORDINATE.lat,
   ]);
-  const [end, setEnd] = useState<any>([
-    JAIPUR_CORDINATE.lng,
-    JAIPUR_CORDINATE.lat,
-  ]);
+  const [end] = useState<any>([JAIPUR_CORDINATE.lng, JAIPUR_CORDINATE.lat]);
   const [coords, setCoords] = useState<any>([]);
 
   const [currentSpeed, setCurrentSpeed] = useState<number>(50);
