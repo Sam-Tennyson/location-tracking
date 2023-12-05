@@ -2,7 +2,7 @@
 import { MAP_ACCESS_TOKEN } from "../shared/Constants";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
-import { getRandomNumber } from "../shared/utils";
+import { calculateBearing, getRandomNumber } from "../shared/Utils";
 // import MapboxDirections from "@mapbox/mapbox-gl-directions";
 // import geoJson from "../JSONData/city.json";
 
@@ -51,15 +51,14 @@ const MapComponent = () => {
     // let currentSpeed = 10; // in meters per second
     let currentLng = DELHI_CORDINATE.lng;
     let currentLat = DELHI_CORDINATE.lat;
-    const bearing = 45; // Example bearing in degrees
+    const bearing = calculateBearing(
+      [DELHI_CORDINATE.lng, DELHI_CORDINATE.lat],
+      [AGRA_CORDINATE.lng, AGRA_CORDINATE.lat]
+    ); // Example bearing in degrees
+
+    console.log(bearing, "bearning");
 
     setInterval(() => {
-      console.log(
-        "inside-intervel",
-        currentSpeed > thresholdSpeed,
-        currentSpeed,
-        thresholdSpeed
-      );
       // Update marker position based on speed
 
       const newLng =
