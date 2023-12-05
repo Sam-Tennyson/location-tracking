@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MAP_ACCESS_TOKEN } from "../shared/Constants";
+import {
+  AGRA_CORDINATE,
+  DELHI_CORDINATE,
+  MAP_ACCESS_TOKEN,
+} from "../shared/Constants";
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { calculateBearing, getRandomNumber } from "../shared/Utils";
@@ -7,15 +11,6 @@ import { calculateBearing, getRandomNumber } from "../shared/Utils";
 // import geoJson from "../JSONData/city.json";
 
 mapboxgl.accessToken = MAP_ACCESS_TOKEN;
-const DELHI_CORDINATE = {
-  lat: 28.7041,
-  lng: 77.1025,
-};
-
-const AGRA_CORDINATE = {
-  lat: 27.1767,
-  lng: 78.0081,
-};
 
 const RANDOM_SPEED = {
   min: 100,
