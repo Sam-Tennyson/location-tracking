@@ -7,8 +7,6 @@ import {
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import { calculateBearing, getRandomNumber } from "../shared/Utils";
-// import MapboxDirections from "@mapbox/mapbox-gl-directions";
-// import geoJson from "../JSONData/city.json";
 
 mapboxgl.accessToken = MAP_ACCESS_TOKEN;
 

@@ -144,9 +144,6 @@ const TestMapComponent = () => {
             <label className="font-bold">Threshold Speed (in km/hr):</label>{" "}
             {thresholdSpeed}
           </div>
-          {/* <div>
-          <Timer timeout={10} initialSeconds={0} />
-        </div> */}
           <div className="flex justify-between items-center flex-wrap gap-2">
             <label className="font-bold">Change Threshold (in km/hr)</label>
             <input
