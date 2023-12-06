@@ -18,7 +18,7 @@ import { calculateDistance } from "../shared/Utils";
 interface IViewport {
   latitude: number;
   longitude: number;
-  zoom?: number | string;
+  zoom?: number;
 }
 
 const TestMapComponent = () => {
@@ -34,10 +34,10 @@ const TestMapComponent = () => {
   const [viewport, setViewport] = useState<IViewport>({
     latitude: 0,
     longitude: 0,
-    zoom: "6.5",
+    zoom: 6.5,
   });
 
-  const [traceData, setTraceData] = useState({
+  const [traceData, setTraceData] = useState<any>({
     type: "FeatureCollection",
     features: [
       {
@@ -134,20 +134,26 @@ const TestMapComponent = () => {
     <>
       <div className="w-[90vw] min-h-screen m-auto">
         <div className="text-center text-2xl py-4 flex justify-between items-center flex-wrap gap-2">
-          <p>Speed: {currentSpeed?.toFixed(7)} km/hr</p>
-          <p>Threshold Speed: {thresholdSpeed} km/hr</p>
+          <div>
+            <label className="font-bold">Speed (in km/hr):</label>{" "}
+            {currentSpeed?.toFixed(7)}
+          </div>
+          <div>
+            <label className="font-bold">Threshold Speed (in km/hr):</label>{" "}
+            {thresholdSpeed}
+          </div>
           {/* <div>
           <Timer timeout={10} initialSeconds={0} />
         </div> */}
           <div className="flex justify-between items-center flex-wrap gap-2">
-            <label>Change Threshold</label>
+            <label className="font-bold">Change Threshold (in km/hr)</label>
             <input
               type="text"
               value={thresholdSpeed}
-              onChange={(e) => setThresholdSpeed(e.target.value)}
+              onChange={(e) => setThresholdSpeed(Number(e.target.value))}
               className="px-3 py-1 border-2 border-slate-300 rounded-sm w-[150px]"
             />{" "}
-            km/hr
+            {/* km/hr */}
           </div>
         </div>
         <p className="text-center">{showMessage()}</p>
