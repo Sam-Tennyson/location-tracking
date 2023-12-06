@@ -24,7 +24,7 @@ export function calculateBearing(
   return (bearing + 360) % 360; // Normalize to 0-360 degrees
 }
 
-export const toRad = (value) => (value * Math.PI) / 180;
+export const toRad = (value: number) => (value * Math.PI) / 180;
 
 
 export function calculateDistance(

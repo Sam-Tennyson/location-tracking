@@ -1,15 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-// import MapGL, { Source, Layer } from "react-map-gl";
 import ReactMapGl, {
   FullscreenControl,
   GeolocateControl,
   Layer,
   Marker,
   NavigationControl,
-  // LineLayer,
-  // Marker,
-  // NavigationControl,
   Source,
 } from "react-map-gl";
 import {
@@ -18,25 +14,27 @@ import {
   MAP_ACCESS_TOKEN,
 } from "../shared/Constants";
 import { calculateDistance } from "../shared/Utils";
-import Timer from "./Timer";
+
+interface IViewport {
+  latitude: number;
+  longitude: number;
+  zoom?: number | string;
+}
 
 const TestMapComponent = () => {
-  const [time] = useState<number>(2000); // 10 sec
+  const [time] = useState<number>(3000); // 3 sec
   const [currentSpeed, setCurrentSpeed] = useState<number>(0);
-  const [thresholdSpeed] = useState<number>(60);
-  const [start, setStart] = useState<any>([
-    DELHI_CORDINATE.lng,
-    DELHI_CORDINATE.lat,
-  ]);
+  const [thresholdSpeed, setThresholdSpeed] = useState<number>(60);
+  const [start] = useState<any>([DELHI_CORDINATE.lng, DELHI_CORDINATE.lat]);
   const [end] = useState<any>([JAIPUR_CORDINATE.lng, JAIPUR_CORDINATE.lat]);
   const [movingMarker, setMovingMarker] = useState<any>([
     DELHI_CORDINATE.lng,
     DELHI_CORDINATE.lat,
   ]);
-  const [viewport, setViewport] = useState({
+  const [viewport, setViewport] = useState<IViewport>({
     latitude: 0,
     longitude: 0,
-    zoom: 8,
+    zoom: "6.5",
   });
 
   const [traceData, setTraceData] = useState({
@@ -66,12 +64,6 @@ const TestMapComponent = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // const response = await fetch(
-      //   "https://docs.mapbox.com/mapbox-gl-js/assets/hike.geojson"
-      // );
-      // const data = await response.json();
-      // const coordinates = data.features[0].geometry.coordinates;
-
       const profile = `mapbox/driving`;
       const path_coordinates = `${start[0]},${start[1]};${end[0]},${end[1]}`;
       const URL = `https://api.mapbox.com/directions/v5/${profile}/${path_coordinates}?steps=true&geometries=geojson&access_token=${MAP_ACCESS_TOKEN}`;
@@ -94,7 +86,6 @@ const TestMapComponent = () => {
       });
 
       setViewport({
-        ...viewport,
         latitude: coordinates?.[0]?.[1],
         longitude: coordinates?.[0]?.[0],
       });
@@ -114,7 +105,7 @@ const TestMapComponent = () => {
             const distance = calculateDistance(point1, point2);
             const timeInHr = time / 3600;
             const speed = distance / timeInHr;
-            console.log(distance, speed);
+            console.log(speed, "speed");
             setCurrentSpeed(speed);
           }
           const newCoordinates = [
@@ -124,7 +115,6 @@ const TestMapComponent = () => {
           setMovingMarker(coordinates?.[i]);
 
           setViewport({
-            ...viewport,
             latitude: coordinates?.[i]?.[1],
             longitude: coordinates?.[i]?.[0],
           });
@@ -137,52 +127,66 @@ const TestMapComponent = () => {
     };
 
     fetchData();
-  }, []); // empty dependency array ensures this effect runs once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
-      <div className="text-center text-2xl py-4">
-        Speed: {currentSpeed} km/hr | Threshold Speed: {thresholdSpeed}
-        <div>{showMessage()}</div>
-        {/* <div>
+      <div className="w-[90vw] min-h-screen m-auto">
+        <div className="text-center text-2xl py-4 flex justify-between items-center flex-wrap gap-2">
+          <p>Speed: {currentSpeed?.toFixed(7)} km/hr</p>
+          <p>Threshold Speed: {thresholdSpeed} km/hr</p>
+          {/* <div>
           <Timer timeout={10} initialSeconds={0} />
         </div> */}
-      </div>
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <label>Change Threshold</label>
+            <input
+              type="text"
+              value={thresholdSpeed}
+              onChange={(e) => setThresholdSpeed(e.target.value)}
+              className="px-3 py-1 border-2 border-slate-300 rounded-sm w-[150px]"
+            />{" "}
+            km/hr
+          </div>
+        </div>
+        <p className="text-center">{showMessage()}</p>
 
-      <ReactMapGl
-        {...viewport}
-        onMove={(evt) => setViewport(evt.viewState)}
-        mapboxAccessToken={MAP_ACCESS_TOKEN}
-        mapStyle={"mapbox://styles/mapbox/streets-v11"}
-        style={{ width: "100%", height: "80vh", margin: "auto" }}
-      >
-        <Source type="geojson" data={traceData}>
-          <Layer
-            id="trace"
-            type="line"
-            paint={{
-              "line-color": "yellow",
-              "line-opacity": 0.75,
-              "line-width": 5,
-            }}
+        <ReactMapGl
+          {...viewport}
+          onMove={(evt) => setViewport(evt.viewState)}
+          mapboxAccessToken={MAP_ACCESS_TOKEN}
+          mapStyle={"mapbox://styles/mapbox/streets-v11"}
+          style={{ width: "100%", height: "80vh", margin: "auto" }}
+        >
+          <Source type="geojson" data={traceData}>
+            <Layer
+              id="trace"
+              type="line"
+              paint={{
+                "line-color": "yellow",
+                "line-opacity": 0.75,
+                "line-width": 5,
+              }}
+            />
+          </Source>
+          <GeolocateControl
+            positionOptions={{ enableHighAccuracy: true }}
+            trackUserLocation={true}
           />
-        </Source>
-        <GeolocateControl
-          positionOptions={{ enableHighAccuracy: true }}
-          trackUserLocation={true}
-        />
-        <FullscreenControl />
-        <NavigationControl />
-        <Marker longitude={movingMarker?.[0]} latitude={movingMarker?.[1]}>
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/744/744465.png"
-            alt="Marker"
-            style={{ width: "40px", height: "40px" }}
-          />
-        </Marker>
-        <Marker longitude={start?.[0]} latitude={start?.[1]} />
-        <Marker longitude={end?.[0]} latitude={end?.[1]} />
-      </ReactMapGl>
+          <FullscreenControl />
+          <NavigationControl />
+          <Marker longitude={movingMarker?.[0]} latitude={movingMarker?.[1]}>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/744/744465.png"
+              alt="Marker"
+              style={{ width: "40px", height: "40px" }}
+            />
+          </Marker>
+          <Marker longitude={start?.[0]} latitude={start?.[1]} />
+          <Marker longitude={end?.[0]} latitude={end?.[1]} />
+        </ReactMapGl>
+      </div>
     </>
   );
 };
