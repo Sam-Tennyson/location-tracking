@@ -53,11 +53,13 @@ const TestMapComponent = () => {
 
   const showMessage = () => {
     if (currentSpeed > thresholdSpeed) {
-      return <div className=" text-red-600 text-lg font-bold">Warning ...</div>;
+      return (
+        <div className=" text-red-600 text-lg font-bold">Warning 😐 ...</div>
+      );
     }
     return (
       <div className="text-green-600 text-lg font-bold">
-        Weldone. You are nice driver...
+        Safe driving 😃 ...
       </div>
     );
   };
@@ -133,7 +135,7 @@ const TestMapComponent = () => {
   return (
     <>
       <div className="w-[90vw] min-h-screen m-auto">
-        <div className="text-center text-2xl py-4 flex justify-between items-center flex-wrap gap-2">
+        <div className="text-center text-base py-4 flex justify-between items-center flex-wrap gap-2">
           <div>
             <label className="font-bold">Speed (in km/hr):</label>{" "}
             {currentSpeed?.toFixed(7)}
@@ -163,7 +165,7 @@ const TestMapComponent = () => {
           onMove={(evt) => setViewport(evt.viewState)}
           mapboxAccessToken={MAP_ACCESS_TOKEN}
           mapStyle={"mapbox://styles/mapbox/streets-v11"}
-          style={{ width: "100%", height: "80vh", margin: "auto" }}
+          style={{ width: "100%", height: "70vh", margin: "auto" }}
         >
           <Source type="geojson" data={traceData}>
             <Layer
