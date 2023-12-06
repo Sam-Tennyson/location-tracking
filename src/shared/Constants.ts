@@ -14,3 +14,8 @@ export const JAIPUR_CORDINATE = {
   lat: 26.9124, 
   lng: 75.7873
 }
+
+export const ETAWAH = {
+  lat: 26.7829, 
+  lng: 79.0277
+}
