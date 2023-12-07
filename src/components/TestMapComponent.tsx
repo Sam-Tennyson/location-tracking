@@ -149,7 +149,10 @@ const TestMapComponent = () => {
             <input
               type="text"
               value={thresholdSpeed}
-              onChange={(e) => setThresholdSpeed(Number(e.target.value))}
+              onChange={(e) => {
+                const { value } = e.target;
+                if (!isNaN(value)) setThresholdSpeed(value);
+              }}
               className="px-3 py-1 border-2 border-slate-300 rounded-sm w-[150px]"
             />{" "}
             {/* km/hr */}
