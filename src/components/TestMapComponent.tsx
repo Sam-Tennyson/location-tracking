@@ -23,8 +23,8 @@ interface IViewport {
 
 const TestMapComponent = () => {
   const [time] = useState<number>(3000); // 3 sec
-  const [currentSpeed, setCurrentSpeed] = useState<number>(0);
-  const [thresholdSpeed, setThresholdSpeed] = useState<number>(60);
+  const [currentSpeed, setCurrentSpeed] = useState<number | string>(0);
+  const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(60);
   const [start] = useState<any>([DELHI_CORDINATE.lng, DELHI_CORDINATE.lat]);
   const [end] = useState<any>([JAIPUR_CORDINATE.lng, JAIPUR_CORDINATE.lat]);
   const [movingMarker, setMovingMarker] = useState<any>([
@@ -138,7 +138,7 @@ const TestMapComponent = () => {
         <div className="text-center text-base py-4 flex justify-between items-center flex-wrap gap-2">
           <div>
             <label className="font-bold">Speed (in km/hr):</label>{" "}
-            {currentSpeed?.toFixed(7)}
+            {Number(currentSpeed)?.toFixed(7)}
           </div>
           <div>
             <label className="font-bold">Threshold Speed (in km/hr):</label>{" "}
@@ -151,7 +151,7 @@ const TestMapComponent = () => {
               value={thresholdSpeed}
               onChange={(e) => {
                 const { value } = e.target;
-                if (!isNaN(value)) setThresholdSpeed(value);
+                if (!isNaN(Number(value))) setThresholdSpeed(value);
               }}
               className="px-3 py-1 border-2 border-slate-300 rounded-sm w-[150px]"
             />{" "}
