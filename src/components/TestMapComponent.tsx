@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import ReactMapGl, {
   FullscreenControl,
   GeolocateControl,
@@ -22,9 +22,11 @@ interface IViewport {
 }
 
 const TestMapComponent = () => {
-  const [time] = useState<number>(3000); // 3 sec
+  const mapRef = useRef<any>();
+
+  const [time] = useState<number>(5000); // 3 sec
   const [currentSpeed, setCurrentSpeed] = useState<number | string>(0);
-  const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(60);
+  const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(40);
   const [start] = useState<any>([DELHI_CORDINATE.lng, DELHI_CORDINATE.lat]);
   const [end] = useState<any>([JAIPUR_CORDINATE.lng, JAIPUR_CORDINATE.lat]);
   const [movingMarker, setMovingMarker] = useState<any>([
@@ -32,8 +34,8 @@ const TestMapComponent = () => {
     DELHI_CORDINATE.lat,
   ]);
   const [viewport, setViewport] = useState<IViewport>({
-    latitude: 0,
-    longitude: 0,
+    latitude: start?.[1],
+    longitude: start?.[0],
     zoom: 6.5,
   });
 
@@ -71,7 +73,7 @@ const TestMapComponent = () => {
       const URL = `https://api.mapbox.com/directions/v5/${profile}/${path_coordinates}?steps=true&geometries=geojson&access_token=${MAP_ACCESS_TOKEN}`;
       const response = await fetch(URL);
       const data = await response.json();
-      const coordinates = data?.routes[0]?.geometry.coordinates;
+      const coordinates = data?.routes[0]?.geometry.coordinates ?? [];
 
       setTraceData({
         type: "FeatureCollection",
@@ -87,11 +89,6 @@ const TestMapComponent = () => {
         ],
       });
 
-      setViewport({
-        latitude: coordinates?.[0]?.[1],
-        longitude: coordinates?.[0]?.[0],
-      });
-
       let i = 0;
       const timer = setInterval(() => {
         if (i < coordinates.length) {
@@ -105,9 +102,10 @@ const TestMapComponent = () => {
               lng: coordinates?.[i]?.[0],
             };
             const distance = calculateDistance(point1, point2);
+
             const timeInHr = time / 3600;
             const speed = distance / timeInHr;
-            console.log(speed, "speed");
+            // console.log(speed, "speed");
             setCurrentSpeed(speed);
           }
           const newCoordinates = [
@@ -116,10 +114,19 @@ const TestMapComponent = () => {
           newCoordinates.push(coordinates?.[i]);
           setMovingMarker(coordinates?.[i]);
 
-          setViewport({
-            latitude: coordinates?.[i]?.[1],
-            longitude: coordinates?.[i]?.[0],
+          mapRef.current?.flyTo({
+            center: [coordinates?.[i]?.[0], coordinates?.[i]?.[1]],
+            duration: time,
           });
+
+          //  setViewport({
+          //    ...viewport,
+          //    latitude: coordinates?.[i]?.[1],
+          //    longitude: coordinates?.[i]?.[0],
+          //    transitionDuration: 2000, // Set the duration of the animation (in milliseconds)
+          //    transitionInterpolator: new window.mapboxgl.CameraInterpolator(),
+          //  });
+
           i++;
         } else {
           setCurrentSpeed(0);
@@ -155,12 +162,12 @@ const TestMapComponent = () => {
               }}
               className="px-3 py-1 border-2 border-slate-300 rounded-sm w-[150px]"
             />{" "}
-            {/* km/hr */}
           </div>
         </div>
         <p className="text-center">{showMessage()}</p>
 
         <ReactMapGl
+          ref={mapRef}
           {...viewport}
           onMove={(evt) => setViewport(evt.viewState)}
           mapboxAccessToken={MAP_ACCESS_TOKEN}
