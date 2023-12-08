@@ -277,7 +277,7 @@ const TestMapComponent = () => {
     });
 
     // Set the interval for moving the marker
-    const timers = paths.map((pathData, index) => {
+    const timers = paths.map((_, index) => {
       let i = loopIterations[index] || 0;
       return setInterval(() => {
         const { speed } = setSpeedAndSkipDistance();
