@@ -1,5 +1,5 @@
 const RangeInputComponent = (props) => {
-  const { sliderValue, handleSliderChange } = props;
+  const { sliderValue, handleSliderChange, min, max } = props;
   // State to hold the value of the range input
 
   return (
@@ -8,8 +8,8 @@ const RangeInputComponent = (props) => {
         type="range"
         id="rangeInput"
         name="rangeInput"
-        min="0"
-        max="100"
+        min={min ?? "0"}
+        max={max ?? "100"}
         value={sliderValue}
         onChange={handleSliderChange}
       />

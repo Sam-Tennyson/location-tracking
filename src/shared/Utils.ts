@@ -78,7 +78,7 @@ export  const generateRoute = (source, destination, steps = 100) => {
   return coordinates.filter((_, index) => index % stepSize === 0);
 };
 
-export function getRandomCoordinatesBetweenPoints(source, destination) {
+export function getRandomCoordinatesBetweenPoints(source, destination, requiredCount = 290) {
     const line = turf.lineString([source, destination]);
 
   // Calculate the length of the route
@@ -89,7 +89,7 @@ export function getRandomCoordinatesBetweenPoints(source, destination) {
   const intervalDistance = routeLength / numPointsRouter;
   // Generate random points along the route
   const randomPoints:any = [];
-  for (let i = 0; i < numPointsRouter; i++) {
+  for (let i = 0; i < requiredCount; i++) {
     const distanceAlongRoute = i * intervalDistance;
     const point = turf.along(line, distanceAlongRoute, { units: 'kilometers' });
     randomPoints.push(point.geometry.coordinates);

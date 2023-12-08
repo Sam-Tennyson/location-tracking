@@ -111,10 +111,16 @@ const TestMapComponent = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [time]);
 
-  // Event handler for the onChange event of the range input
   const handleSliderChange = (e) => {
     const { value } = e.target;
     if (!isNaN(Number(value))) setThresholdSpeed(value);
+  };
+
+  const handleSpeedSliderChange = (e) => {
+    const { value } = e.target;
+    const t1 = 50000 / value;
+    setTime(t1);
+    if (!isNaN(Number(value))) setCurrentSpeed(value);
   };
 
   return (
@@ -123,27 +129,12 @@ const TestMapComponent = () => {
         <div>
           <label className="font-bold">Speed (in km/sec):</label>{" "}
           {Number(currentSpeed)?.toFixed(7)}
-          <div className="flex gap-2">
-            <button
-              className="px-3 py-2 bg-red-400 text-white"
-              onClick={() => setTime((prev) => prev + 100)}
-            >
-              Decrease
-            </button>
-            <button
-              className="px-3 py-2 bg-green-400 text-white"
-              onClick={() => {
-                const newTime = time - 100;
-                if (newTime <= 0) {
-                  setTime(100);
-                  return;
-                }
-                setTime(newTime);
-              }}
-            >
-              Increase
-            </button>
-          </div>
+          <RangeInputComponent
+            sliderValue={currentSpeed}
+            handleSliderChange={handleSpeedSliderChange}
+            min={20}
+            max={500}
+          />
         </div>
         <div></div>
         <div className="flex justify-between items-center flex-wrap gap-2">
@@ -151,6 +142,7 @@ const TestMapComponent = () => {
           <RangeInputComponent
             sliderValue={thresholdSpeed}
             handleSliderChange={handleSliderChange}
+            max={500}
           />
           {thresholdSpeed}
         </div>
@@ -182,7 +174,7 @@ const TestMapComponent = () => {
         <Marker
           longitude={movingMarker?.[0]}
           latitude={movingMarker?.[1]}
-          offset={[-8, -2]}
+          offset={[0, -10]}
         >
           <img
             src="https://cdn-icons-png.flaticon.com/512/2377/2377874.png"
