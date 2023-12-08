@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import * as turf from "@turf/turf"
+
 export function getRandomNumber(min: number, max: number) {
   const randomDecimal = Math.random();
   const randomNumber = min + randomDecimal * (max - min);
@@ -50,4 +53,47 @@ const lat1 = point1.lat;
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
     return R * c; // Distance in kilometers
+}
+
+  // Function to generate coordinates along a LineString using Turf.js
+export function generateCoordinatesAlongLineString(lineString, interval) {
+    const line = turf.lineString(lineString);
+    const length = turf.length(line, { units: "kilometers" });
+    const coordinates: any = [];
+    for (let distance = 0; distance <= length; distance += interval) {
+      const point = turf.along(line, distance, { units: "kilometers" });
+      coordinates.push(point.geometry.coordinates);
+    }
+    return coordinates.map((coord) => ([
+      coord[1], coord[0]]));
+  }
+
+
+export  const generateRoute = (source, destination, steps = 100) => {
+  const line = turf.lineString([source, destination]);
+  const route = turf.lineSliceAlong(line, 0, 1, { units: 'kilometers' });
+  const coordinates = turf.coordAll(route);
+  const stepSize = Math.floor(coordinates.length / steps);
+
+  return coordinates.filter((coord, index) => index % stepSize === 0);
+};
+
+export function getRandomCoordinatesBetweenPoints(source, destination) {
+    const line = turf.lineString([source, destination]);
+
+  // Calculate the length of the route
+  const routeLength = turf.length(line, { units: 'kilometers' });
+  
+  // Calculate the interval distance between random points (1 km radius)
+  const numPointsRouter = routeLength.toFixed()
+  const intervalDistance = routeLength / numPointsRouter;
+  // Generate random points along the route
+  const randomPoints:any = [];
+  for (let i = 0; i < numPointsRouter; i++) {
+    const distanceAlongRoute = i * intervalDistance;
+    const point = turf.along(line, distanceAlongRoute, { units: 'kilometers' });
+    randomPoints.push(point.geometry.coordinates);
+  }
+
+  return randomPoints;
 }

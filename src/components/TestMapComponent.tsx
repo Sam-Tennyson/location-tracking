@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import ReactMapGl, {
   FullscreenControl,
-  GeolocateControl,
   Layer,
   Marker,
   NavigationControl,
@@ -13,7 +12,8 @@ import {
   JAIPUR_CORDINATE,
   MAP_ACCESS_TOKEN,
 } from "../shared/Constants";
-import { calculateDistance } from "../shared/Utils";
+import { getRandomCoordinatesBetweenPoints } from "../shared/Utils";
+import RangeInputComponent from "./RangeInputComponent";
 
 interface IViewport {
   latitude: number;
@@ -23,16 +23,14 @@ interface IViewport {
 
 const TestMapComponent = () => {
   const mapRef = useRef<any>();
+  const [loopIteration, setLoopIteration] = useState(0);
+  const [time, setTime] = useState<number>(1000);
 
-  const [time] = useState<number>(5000); // 3 sec
   const [currentSpeed, setCurrentSpeed] = useState<number | string>(0);
   const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(40);
   const [start] = useState<any>([DELHI_CORDINATE.lng, DELHI_CORDINATE.lat]);
   const [end] = useState<any>([JAIPUR_CORDINATE.lng, JAIPUR_CORDINATE.lat]);
-  const [movingMarker, setMovingMarker] = useState<any>([
-    DELHI_CORDINATE.lng,
-    DELHI_CORDINATE.lat,
-  ]);
+  const [movingMarker, setMovingMarker] = useState<any>(start);
   const [viewport, setViewport] = useState<IViewport>({
     latitude: start?.[1],
     longitude: start?.[0],
@@ -53,156 +51,149 @@ const TestMapComponent = () => {
     ],
   });
 
-  const showMessage = () => {
-    if (currentSpeed > thresholdSpeed) {
-      return (
-        <div className=" text-red-600 text-lg font-bold">Warning 😐 ...</div>
-      );
-    }
-    return (
-      <div className="text-green-600 text-lg font-bold">
-        Safe driving 😃 ...
-      </div>
-    );
+  const showMessage = () => (
+    <div
+      className={`text-lg font-bold ${
+        currentSpeed > thresholdSpeed ? "text-red-600" : "text-green-600"
+      }`}
+    >
+      {currentSpeed > thresholdSpeed ? "Warning 😐 ..." : "Safe driving 😃 ..."}
+    </div>
+  );
+
+  const setSpeedAndSkipDistance = () => {
+    const skipDistance = time / 1000;
+    const speed = 50000 / time; // 1 is the distance between coordinates (distance/time)
+
+    return { speed, skipDistance };
   };
 
+  function fetchData() {
+    const source = start;
+    const destination = end;
+    const coordinates = getRandomCoordinatesBetweenPoints(source, destination);
+    return coordinates;
+  }
+
   useEffect(() => {
-    const fetchData = async () => {
-      const profile = `mapbox/driving`;
-      const path_coordinates = `${start[0]},${start[1]};${end[0]},${end[1]}`;
-      const URL = `https://api.mapbox.com/directions/v5/${profile}/${path_coordinates}?steps=true&geometries=geojson&access_token=${MAP_ACCESS_TOKEN}`;
-      const response = await fetch(URL);
-      const data = await response.json();
-      const coordinates = data?.routes[0]?.geometry.coordinates ?? [];
+    const coordinates = fetchData();
 
-      setTraceData({
-        type: "FeatureCollection",
-        features: [
-          {
-            type: "Feature",
-            properties: {},
-            geometry: {
-              type: "LineString",
-              coordinates: [...coordinates],
-            },
+    setTraceData({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: [...coordinates],
           },
-        ],
-      });
+        },
+      ],
+    });
 
-      let i = 0;
-      const timer = setInterval(() => {
-        if (i < coordinates.length) {
-          if (i > 0) {
-            const point1 = {
-              lat: coordinates?.[i - 1]?.[1],
-              lng: coordinates?.[i - 1]?.[0],
-            };
-            const point2 = {
-              lat: coordinates?.[i]?.[1],
-              lng: coordinates?.[i]?.[0],
-            };
-            const distance = calculateDistance(point1, point2);
+    let i = loopIteration;
 
-            const timeInHr = time / 3600;
-            const speed = distance / timeInHr;
-            // console.log(speed, "speed");
-            setCurrentSpeed(speed);
-          }
-          const newCoordinates = [
-            ...(traceData?.features?.[0]?.geometry?.coordinates ?? []),
-          ];
-          newCoordinates.push(coordinates?.[i]);
-          setMovingMarker(coordinates?.[i]);
+    const timer = setInterval(() => {
+      const { speed } = setSpeedAndSkipDistance();
+      if (i + 1 < coordinates.length) {
+        setCurrentSpeed(speed);
+        setMovingMarker(coordinates?.[i + 1]);
+        i = i + 1;
+        setLoopIteration(i);
+      } else {
+        setCurrentSpeed(0);
+        clearInterval(timer);
+      }
+    }, time);
 
-          mapRef.current?.flyTo({
-            center: [coordinates?.[i]?.[0], coordinates?.[i]?.[1]],
-            duration: time,
-          });
-
-          //  setViewport({
-          //    ...viewport,
-          //    latitude: coordinates?.[i]?.[1],
-          //    longitude: coordinates?.[i]?.[0],
-          //    transitionDuration: 2000, // Set the duration of the animation (in milliseconds)
-          //    transitionInterpolator: new window.mapboxgl.CameraInterpolator(),
-          //  });
-
-          i++;
-        } else {
-          setCurrentSpeed(0);
-          window.clearInterval(timer);
-        }
-      }, time);
-    };
-
-    fetchData();
+    return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [time]);
+
+  // Event handler for the onChange event of the range input
+  const handleSliderChange = (e) => {
+    const { value } = e.target;
+    if (!isNaN(Number(value))) setThresholdSpeed(value);
+  };
 
   return (
-    <>
-      <div className="w-[90vw] min-h-screen m-auto">
-        <div className="text-center text-base py-4 flex justify-between items-center flex-wrap gap-2">
-          <div>
-            <label className="font-bold">Speed (in km/hr):</label>{" "}
-            {Number(currentSpeed)?.toFixed(7)}
-          </div>
-          <div>
-            <label className="font-bold">Threshold Speed (in km/hr):</label>{" "}
-            {thresholdSpeed}
-          </div>
-          <div className="flex justify-between items-center flex-wrap gap-2">
-            <label className="font-bold">Change Threshold (in km/hr)</label>
-            <input
-              type="text"
-              value={thresholdSpeed}
-              onChange={(e) => {
-                const { value } = e.target;
-                if (!isNaN(Number(value))) setThresholdSpeed(value);
+    <div className="w-[90vw] min-h-screen m-auto">
+      <div className="text-center text-base py-4 flex justify-between items-center flex-wrap gap-2">
+        <div>
+          <label className="font-bold">Speed (in km/sec):</label>{" "}
+          {Number(currentSpeed)?.toFixed(7)}
+          <div className="flex gap-2">
+            <button
+              className="px-3 py-2 bg-red-400 text-white"
+              onClick={() => setTime((prev) => prev + 100)}
+            >
+              Decrease
+            </button>
+            <button
+              className="px-3 py-2 bg-green-400 text-white"
+              onClick={() => {
+                const newTime = time - 100;
+                if (newTime <= 0) {
+                  setTime(100);
+                  return;
+                }
+                setTime(newTime);
               }}
-              className="px-3 py-1 border-2 border-slate-300 rounded-sm w-[150px]"
-            />{" "}
+            >
+              Increase
+            </button>
           </div>
         </div>
-        <p className="text-center">{showMessage()}</p>
-
-        <ReactMapGl
-          ref={mapRef}
-          {...viewport}
-          onMove={(evt) => setViewport(evt.viewState)}
-          mapboxAccessToken={MAP_ACCESS_TOKEN}
-          mapStyle={"mapbox://styles/mapbox/streets-v11"}
-          style={{ width: "100%", height: "70vh", margin: "auto" }}
-        >
-          <Source type="geojson" data={traceData}>
-            <Layer
-              id="trace"
-              type="line"
-              paint={{
-                "line-color": "yellow",
-                "line-opacity": 0.75,
-                "line-width": 5,
-              }}
-            />
-          </Source>
-          <GeolocateControl
-            positionOptions={{ enableHighAccuracy: true }}
-            trackUserLocation={true}
+        <div></div>
+        <div className="flex justify-between items-center flex-wrap gap-2">
+          <label className="font-bold">Threshold Speed (in km/sec):</label>{" "}
+          <RangeInputComponent
+            sliderValue={thresholdSpeed}
+            handleSliderChange={handleSliderChange}
           />
-          <FullscreenControl />
-          <NavigationControl />
-          <Marker longitude={movingMarker?.[0]} latitude={movingMarker?.[1]}>
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/744/744465.png"
-              alt="Marker"
-              style={{ width: "40px", height: "40px" }}
-            />
-          </Marker>
-          <Marker longitude={start?.[0]} latitude={start?.[1]} />
-          <Marker longitude={end?.[0]} latitude={end?.[1]} />
-        </ReactMapGl>
+          {thresholdSpeed}
+        </div>
       </div>
-    </>
+      <p className="text-center">{showMessage()}</p>
+
+      <ReactMapGl
+        ref={mapRef}
+        {...viewport}
+        onMove={(evt) => setViewport(evt.viewState)}
+        mapboxAccessToken={MAP_ACCESS_TOKEN}
+        mapStyle={"mapbox://styles/mapbox/streets-v11"}
+        style={{ width: "100%", height: "70vh", margin: "auto" }}
+      >
+        {/* Map components (omitted for brevity) */}
+        <Source type="geojson" data={traceData}>
+          <Layer
+            id="trace"
+            type="line"
+            paint={{
+              "line-color": "yellow",
+              "line-opacity": 0.75,
+              "line-width": 5,
+            }}
+          />
+        </Source>
+        <FullscreenControl />
+        <NavigationControl />
+        <Marker
+          longitude={movingMarker?.[0]}
+          latitude={movingMarker?.[1]}
+          offset={[-8, -2]}
+        >
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/2377/2377874.png"
+            alt="Marker"
+            style={{ width: "30px", height: "30px" }}
+          />
+        </Marker>
+        <Marker longitude={start?.[0]} latitude={start?.[1]} />
+        <Marker longitude={end?.[0]} latitude={end?.[1]} />
+      </ReactMapGl>
+    </div>
   );
 };
 
