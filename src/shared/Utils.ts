@@ -75,7 +75,7 @@ export  const generateRoute = (source, destination, steps = 100) => {
   const coordinates = turf.coordAll(route);
   const stepSize = Math.floor(coordinates.length / steps);
 
-  return coordinates.filter((coord, index) => index % stepSize === 0);
+  return coordinates.filter((_, index) => index % stepSize === 0);
 };
 
 export function getRandomCoordinatesBetweenPoints(source, destination) {
