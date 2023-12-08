@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect, useRef } from "react";
 import ReactMapGl, {
@@ -14,6 +15,9 @@ import {
 } from "../shared/Constants";
 import { getRandomCoordinatesBetweenPoints } from "../shared/Utils";
 import RangeInputComponent from "./RangeInputComponent";
+import orangePin from "../assets/orangepin.png";
+import greenPin from "../assets/greenpin.png";
+import redPin from "../assets/redpin.png";
 
 interface IViewport {
   latitude: number;
@@ -21,13 +25,44 @@ interface IViewport {
   zoom?: number;
 }
 
+const GREEN_SPEED = 200;
+const ORANGE_SPEED = 200;
+const RED_SPEED = 250;
+
+const vehile_list = [
+  {
+    id: 1,
+    speed: RED_SPEED,
+    color: "red",
+    imgURL: redPin,
+    message: "Warning 😶",
+  },
+  {
+    id: 2,
+    speed: ORANGE_SPEED,
+    color: "orange",
+    imgURL: orangePin,
+    message: "Approaching limit! 😐 ",
+  },
+  {
+    id: 3,
+    speed: GREEN_SPEED,
+    color: "green",
+    imgURL: greenPin,
+    message: "Safe driving 😃 ",
+  },
+];
+
 const TestMapComponent = () => {
   const mapRef = useRef<any>();
   const [loopIteration, setLoopIteration] = useState(0);
   const [time, setTime] = useState<number>(1000);
+  const [vehicleStatus, setVehicleStatus] = useState<
+    "green" | "orange" | "red"
+  >("green");
 
   const [currentSpeed, setCurrentSpeed] = useState<number | string>(0);
-  const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(40);
+  const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(150);
   const [start] = useState<any>([DELHI_CORDINATE.lng, DELHI_CORDINATE.lat]);
   const [end] = useState<any>([JAIPUR_CORDINATE.lng, JAIPUR_CORDINATE.lat]);
   const [movingMarker, setMovingMarker] = useState<any>(start);
@@ -123,6 +158,24 @@ const TestMapComponent = () => {
     if (!isNaN(Number(value))) setCurrentSpeed(value);
   };
 
+  const messageVehicleStatus = () => {
+    let status: "green" | "orange" | "red" = "green";
+
+    if (Number(currentSpeed) > Number(thresholdSpeed) + 10) {
+      status = "red";
+    } else if (currentSpeed > thresholdSpeed) {
+      status = "orange";
+    }
+
+    setVehicleStatus(status);
+  };
+
+  useEffect(() => {
+    messageVehicleStatus();
+  }, [currentSpeed, thresholdSpeed]);
+
+  console.log(vehicleStatus, "vehicleStatus");
+
   return (
     <div className="w-[90vw] min-h-screen m-auto">
       <div className="text-center text-base py-4 flex justify-between items-center flex-wrap gap-2">
@@ -147,7 +200,21 @@ const TestMapComponent = () => {
           {thresholdSpeed}
         </div>
       </div>
-      <p className="text-center">{showMessage()}</p>
+      <p className="text-center mb-2">{showMessage()}</p>
+      <div className="">
+        <ul className="flex items-center justify-between gap-2 md:w-[60%] m-auto">
+          {vehile_list.map((vehicle) => (
+            <li key={vehicle.id} className="flex flex-col items-center">
+              <img
+                alt="Marker"
+                src={vehicle?.imgURL}
+                style={{ width: "30px", height: "30px" }}
+              />
+              <p>{vehicle.message}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
 
       <ReactMapGl
         ref={mapRef}
@@ -177,8 +244,14 @@ const TestMapComponent = () => {
           offset={[0, -10]}
         >
           <img
-            src="https://cdn-icons-png.flaticon.com/512/2377/2377874.png"
             alt="Marker"
+            src={
+              vehicleStatus === "red"
+                ? vehile_list?.[0]?.imgURL
+                : vehicleStatus === "orange"
+                ? vehile_list?.[1]?.imgURL
+                : vehile_list?.[2]?.imgURL
+            }
             style={{ width: "30px", height: "30px" }}
           />
         </Marker>
