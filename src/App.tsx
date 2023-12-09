@@ -8,8 +8,8 @@ function App() {
     <>
       {/* <MapComponent /> */}
       {/* <ReactMapComponent /> */}
-      {/* <TestMapComponent2 /> */}
-      <TestMapComponent />
+      <TestMapComponent2 />
+      {/* <TestMapComponent /> */}
     </>
   );
 }

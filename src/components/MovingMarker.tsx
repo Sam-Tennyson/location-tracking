@@ -1,46 +1,54 @@
-import React, { useEffect, useState } from "react";
-import { Marker } from "react-map-gl";
+import { useEffect, useState } from "react";
+import { Marker, Popup } from "react-map-gl";
 
-interface MovingMarkerProps {
-  coordinates: [number, number];
-  speed: number;
-  imgURL: string;
-}
+// const point1 = turf.point(route?.[currentIndex]);
+// const point2 = turf.point(route?.[currentIndex - 1]);
+// const options = { units: "kilometers" }; // or 'miles' or 'degrees'
+// const calculatedDistance = turf.distance(point1, point2, options);
+// console.log(currentCoordinate, calculatedDistance);
 
-const MovingMarker: React.FC<MovingMarkerProps> = ({
-  coordinates,
-  speed,
-  imgURL,
-}) => {
-  const [position, setPosition] = useState(coordinates);
+const MovingMarker = ({ route, intervalTime = 1000, specificTime = null }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const time = specificTime ? specificTime : intervalTime;
 
   useEffect(() => {
-    let interval;
+    const intervalId = setInterval(() => {
+      setCurrentIndex((prevIndex) => {
+        if (prevIndex + 1 < route.length) {
+          return (prevIndex + 1) % route.length;
+        }
+        return prevIndex;
+      });
+    }, time);
 
-    // Update marker position at a specified speed
-    if (speed > 0) {
-      interval = setInterval(() => {
-        setPosition((prev) => {
-          const [prevLng, prevLat] = prev;
-          const [destLng, destLat] = coordinates;
-          const diffLng = (destLng - prevLng) / 100;
-          const diffLat = (destLat - prevLat) / 100;
-          return [prevLng + diffLng, prevLat + diffLat];
-        });
-      }, 1000 / speed);
-    }
+    return () => clearInterval(intervalId);
+  }, [route, time]);
 
-    return () => clearInterval(interval);
-  }, [coordinates, speed]);
+  const currentCoordinate = route[currentIndex];
+  const currentCoordinateSpeed = 50000 / time;
 
   return (
-    <Marker longitude={position[0]} latitude={position[1]} offset={[0, -10]}>
-      <img
-        alt="Moving Marker"
-        src={imgURL}
-        style={{ width: "30px", height: "30px" }}
-      />
-    </Marker>
+    <>
+      <Marker
+        latitude={currentCoordinate?.[1]}
+        longitude={currentCoordinate?.[0]}
+      >
+        <div style={{ fontSize: "24px" }}>📍</div>
+      </Marker>
+      <Popup
+        latitude={currentCoordinate?.[1]}
+        longitude={currentCoordinate?.[0]}
+        anchor="bottom"
+        offset={[0, -25] as [number, number]}
+        closeOnClick={false}
+      >
+        {`${currentCoordinate?.[1]?.toFixed(
+          4
+        )}, ${currentCoordinate?.[0]?.toFixed(4)}`}{" "}
+        and
+        {currentCoordinateSpeed} km/sec
+      </Popup>
+    </>
   );
 };
 
