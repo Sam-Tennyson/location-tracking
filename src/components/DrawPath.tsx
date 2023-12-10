@@ -3,9 +3,10 @@ import { Layer, Source } from "react-map-gl";
 import { getRandomCoordinatesBetweenPoints } from "../shared/Utils";
 import MovingMarker from "./MovingMarker";
 
-const DrawPath = ({ id, path, color }) => {
+const DrawPath = ({ id, routeData, path, color, thresholdSpeed }) => {
   const start = [path?.[0]?.lng, path?.[0]?.lat];
   const end = [path?.[1]?.lng, path?.[1]?.lat];
+
   const coordinates = getRandomCoordinatesBetweenPoints(start, end);
   const geojson: any = {
     type: "FeatureCollection",
@@ -20,6 +21,8 @@ const DrawPath = ({ id, path, color }) => {
     ],
   };
 
+  // console.log(thresholdSpeed);
+
   return (
     <Source id={id} type="geojson" data={geojson}>
       <Layer
@@ -31,9 +34,9 @@ const DrawPath = ({ id, path, color }) => {
         }}
       />
       <MovingMarker
+        routeData={routeData}
         route={coordinates}
-        intervalTime={2000}
-        specificTime={id === "PTJ" ? 100 : null}
+        thresholdSpeed={thresholdSpeed}
       />
     </Source>
   );

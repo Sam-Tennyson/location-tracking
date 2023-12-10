@@ -97,3 +97,7 @@ export function getRandomCoordinatesBetweenPoints(source, destination, requiredC
 
   return randomPoints;
 }
+
+export const showMarkerSpeedWithConstants = (time, distance = 50000) => {
+  return (distance / time)
+}
