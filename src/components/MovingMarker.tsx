@@ -78,7 +78,6 @@ const MovingMarker = ({ routeData, route, thresholdSpeed }) => {
         longitude={currentCoordinate?.[0]}
         offset={[0, -10]}
       >
-        <div style={{ fontSize: "24px" }}>📍</div>
         <img
           alt="Marker"
           src={renderStatusImage()}
@@ -92,8 +91,10 @@ const MovingMarker = ({ routeData, route, thresholdSpeed }) => {
         offset={[0, -25] as [number, number]}
         closeOnClick={false}
       >
-        {routeData?.pathId} <br />
-        {renderSpeed()} km/sec
+        <div className="text-center">
+          Path {routeData?.pathId} <br />
+          {renderSpeed()} km/sec
+        </div>
       </Popup>
     </>
   );

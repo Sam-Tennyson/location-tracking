@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import ReactMapGL from "react-map-gl";
+import ReactMapGL, { FullscreenControl, NavigationControl } from "react-map-gl";
 import {
   AGRA_CORDINATE,
   BARIELY,
@@ -15,6 +15,37 @@ import {
 import DrawPath from "./DrawPath";
 import RangeInputComponent from "./RangeInputComponent";
 import { showMarkerSpeedWithConstants } from "../shared/Utils";
+import orangePin from "../assets/orangepin.png";
+import greenPin from "../assets/greenpin.png";
+import redPin from "../assets/redpin.png";
+
+const GREEN_SPEED = 200;
+const ORANGE_SPEED = 200;
+const RED_SPEED = 250;
+
+const vehile_list = [
+  {
+    id: 1,
+    speed: RED_SPEED,
+    color: "red",
+    imgURL: redPin,
+    message: "Warning 😶",
+  },
+  {
+    id: 2,
+    speed: ORANGE_SPEED,
+    color: "orange",
+    imgURL: orangePin,
+    message: "Approaching limit! 😐 ",
+  },
+  {
+    id: 3,
+    speed: GREEN_SPEED,
+    color: "green",
+    imgURL: greenPin,
+    message: "Safe driving 😃 ",
+  },
+];
 
 const TestMapComponent2 = () => {
   const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(150);
@@ -101,70 +132,96 @@ const TestMapComponent2 = () => {
 
   return (
     <>
-      {selectedPath?.index !== -1 && (
-        <div>
-          <label className="font-bold">Speed (in km/sec):</label>{" "}
-          {Number(
-            showMarkerSpeedWithConstants(
-              routesData?.[selectedPath?.index]?.defaultTime
-            )
-          )?.toFixed(7)}
-          <RangeInputComponent
-            sliderValue={showMarkerSpeedWithConstants(
-              routesData?.[selectedPath?.index]?.defaultTime
-            )}
-            handleSliderChange={handleSpeedSliderChange}
-            min={20}
-            max={500}
-          />
+      <div className="w-[90vw] min-h-screen m-auto">
+        <div className="flex md:flex-row flex-col justify-between items-start my-2">
+          <div className="flex flex-col gap-2">
+            <div className="gap-2">
+              <label className="font-bold">Threshold Speed (in km/sec):</label>{" "}
+              {thresholdSpeed}
+              <RangeInputComponent
+                sliderValue={thresholdSpeed}
+                handleSliderChange={handleSliderChange}
+                max={500}
+              />
+            </div>
+            <div className="flex justify-start items-center flex-wrap gap-2">
+              <label className="font-bold">Select Path:</label>
+              <select
+                className="px-3 py-2"
+                onChange={(e) =>
+                  handlePathSelection(routesData[parseInt(e.target.value)])
+                }
+              >
+                <option value={-1}>None</option>
+                {routesData.map((pathData, index) => (
+                  <option
+                    key={`${index}_path`}
+                    value={index}
+                    className="px-3 py-1"
+                  >
+                    Path {pathData?.pathId}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          {selectedPath?.index !== -1 && (
+            <div className="gap-2">
+              <label className="font-bold">Speed (in km/sec):</label>{" "}
+              {Number(
+                showMarkerSpeedWithConstants(
+                  routesData?.[selectedPath?.index]?.defaultTime
+                )
+              )?.toFixed(7)}
+              <RangeInputComponent
+                sliderValue={showMarkerSpeedWithConstants(
+                  routesData?.[selectedPath?.index]?.defaultTime
+                )}
+                handleSliderChange={handleSpeedSliderChange}
+                min={20}
+                max={500}
+              />
+            </div>
+          )}
         </div>
-      )}
-      <div className="flex justify-between items-center flex-wrap gap-2">
-        <label className="font-bold">Threshold Speed (in km/sec):</label>{" "}
-        <RangeInputComponent
-          sliderValue={thresholdSpeed}
-          handleSliderChange={handleSliderChange}
-          max={500}
-        />
-        {thresholdSpeed}
-      </div>
-      <div className="flex justify-start items-center flex-wrap gap-2">
-        <label className="font-bold">Select Path:</label>
-        <select
-          className="px-3 py-2"
-          onChange={(e) =>
-            handlePathSelection(routesData[parseInt(e.target.value)])
-          }
+        <div className="">
+          <ul className="flex items-center justify-between gap-2 md:w-[60%] m-auto">
+            {vehile_list.map((vehicle) => (
+              <li key={vehicle.id} className="flex flex-col items-center">
+                <img
+                  alt="Marker"
+                  src={vehicle?.imgURL}
+                  style={{ width: "30px", height: "30px" }}
+                />
+                <p>{vehicle.message}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <ReactMapGL
+          {...viewport}
+          onMove={(evt) => setViewport(evt.viewState)}
+          mapboxAccessToken={MAP_ACCESS_TOKEN}
+          mapStyle={"mapbox://styles/mapbox/streets-v11"}
+          style={{ width: "100%", height: "70vh", margin: "auto" }}
         >
-          <option value={-1}>None</option>
-          {routesData.map((pathData, index) => (
-            <option key={`${index}_path`} value={index} className="px-3 py-1">
-              Path {pathData?.pathId}
-            </option>
-          ))}
-        </select>
+          {routesData?.map((route, index) => {
+            // console.log(route);
+            return (
+              <DrawPath
+                id={`${index}_route`}
+                key={`${index}_route`}
+                path={route?.coordinatesStateEnd}
+                routeData={route}
+                color="#FFFF00"
+                thresholdSpeed={thresholdSpeed}
+              />
+            );
+          })}
+          <FullscreenControl />
+          <NavigationControl />
+        </ReactMapGL>
       </div>
-      <ReactMapGL
-        {...viewport}
-        onMove={(evt) => setViewport(evt.viewState)}
-        mapboxAccessToken={MAP_ACCESS_TOKEN}
-        mapStyle={"mapbox://styles/mapbox/streets-v11"}
-        style={{ width: "100%", height: "70vh", margin: "auto" }}
-      >
-        {routesData?.map((route, index) => {
-          // console.log(route);
-          return (
-            <DrawPath
-              id={`${index}_route`}
-              key={`${index}_route`}
-              path={route?.coordinatesStateEnd}
-              routeData={route}
-              color="#FFFF00"
-              thresholdSpeed={thresholdSpeed}
-            />
-          );
-        })}
-      </ReactMapGL>
     </>
   );
 };
