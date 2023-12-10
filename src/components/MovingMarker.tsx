@@ -1,6 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState } from "react";
 import { Marker, Popup } from "react-map-gl";
-import { showMarkerSpeedWithConstants } from "../shared/Utils";
 import orangePin from "../assets/orangepin.png";
 import greenPin from "../assets/greenpin.png";
 import redPin from "../assets/redpin.png";
@@ -50,11 +50,26 @@ const MovingMarker = ({ routeData, route, thresholdSpeed }) => {
   }, [route, time]);
 
   const currentCoordinate = route[currentIndex];
-  const currentCoordinateSpeed =
-    currentCoordinate?.[1] !== routeData?.coordinatesStateEnd?.[1]?.lat &&
-    currentCoordinate?.[0] !== routeData?.coordinatesStateEnd?.[1]?.lng
-      ? showMarkerSpeedWithConstants(time)
-      : 0;
+
+  const renderSpeed = () => {
+    if (
+      currentCoordinate?.[1] !== routeData?.coordinatesStateEnd?.[1]?.lat &&
+      currentCoordinate?.[0] !== routeData?.coordinatesStateEnd?.[1]?.lng
+    ) {
+      return routeData?.vehicleSpeed?.toFixed(7);
+    }
+    return 0;
+  };
+
+  const renderStatusImage = () => {
+    if (routeData?.vehicleSpeed > Number(thresholdSpeed) + 10) {
+      return vehile_list?.[0]?.imgURL;
+    }
+    if (routeData?.vehicleSpeed > Number(thresholdSpeed)) {
+      return vehile_list?.[1]?.imgURL;
+    }
+    return vehile_list?.[2]?.imgURL;
+  };
 
   return (
     <>
@@ -64,17 +79,11 @@ const MovingMarker = ({ routeData, route, thresholdSpeed }) => {
         offset={[0, -10]}
       >
         <div style={{ fontSize: "24px" }}>📍</div>
-        {/* <img
+        <img
           alt="Marker"
-          src={
-            status === "red"
-              ? vehile_list?.[0]?.imgURL
-              : status === "orange"
-              ? vehile_list?.[1]?.imgURL
-              : vehile_list?.[2]?.imgURL
-          }
+          src={renderStatusImage()}
           style={{ width: "30px", height: "30px" }}
-        /> */}
+        />
       </Marker>
       <Popup
         latitude={currentCoordinate?.[1]}
@@ -83,8 +92,8 @@ const MovingMarker = ({ routeData, route, thresholdSpeed }) => {
         offset={[0, -25] as [number, number]}
         closeOnClick={false}
       >
-        Path {routeData?.pathId} <br />
-        {currentCoordinateSpeed.toFixed(7)} km/sec
+        {routeData?.pathId} <br />
+        {renderSpeed()} km/sec
       </Popup>
     </>
   );

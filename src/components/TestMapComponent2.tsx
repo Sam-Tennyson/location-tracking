@@ -26,39 +26,43 @@ const TestMapComponent2 = () => {
   const [routesData, setRoutesData] = useState<any>([
     {
       pathId: 1,
+      defaultTime: 3000,
+      vehicleSpeed: showMarkerSpeedWithConstants(3000),
+      isSelected: false,
       coordinatesStateEnd: [
         { lat: DELHI_CORDINATE.lat, lng: DELHI_CORDINATE.lng }, // Delhi
         { lat: JAIPUR_CORDINATE.lat, lng: JAIPUR_CORDINATE.lng }, // Noida
       ],
-      defaultTime: 3000,
-      vehicleStatus: showMarkerSpeedWithConstants(3000),
     },
     {
       pathId: 2,
+      defaultTime: 3000,
+      vehicleSpeed: showMarkerSpeedWithConstants(3000),
+      isSelected: false,
       coordinatesStateEnd: [
         { lat: LUCKNOW.lat, lng: LUCKNOW.lng }, // Punjab
         { lat: GWALIOW.lat, lng: GWALIOW.lng }, // Jaipur
       ],
-      defaultTime: 3000,
-      vehicleStatus: showMarkerSpeedWithConstants(3000),
     },
     {
       pathId: 3,
+      defaultTime: 3000,
+      vehicleSpeed: showMarkerSpeedWithConstants(3000),
+      isSelected: false,
       coordinatesStateEnd: [
         { lat: NANITAL.lat, lng: NANITAL.lng }, // Nanital
         { lat: BARIELY.lat, lng: BARIELY.lng }, // Bariely
       ],
-      defaultTime: 3000,
-      vehicleStatus: showMarkerSpeedWithConstants(3000),
     },
     {
       pathId: 4,
+      defaultTime: 3000,
+      vehicleSpeed: showMarkerSpeedWithConstants(3000),
+      isSelected: false,
       coordinatesStateEnd: [
         { lat: ETAWAH.lat, lng: ETAWAH.lng }, // Nanital
         { lat: AGRA_CORDINATE.lat, lng: AGRA_CORDINATE.lng }, // Bariely
       ],
-      defaultTime: 3000,
-      vehicleStatus: showMarkerSpeedWithConstants(3000),
     },
   ]);
 
@@ -81,7 +85,7 @@ const TestMapComponent2 = () => {
       (route) => route?.pathId === selectedPath?.pathId
     );
     findRoutes.defaultTime = t1;
-    findRoutes.vehicleStatus = showMarkerSpeedWithConstants(
+    findRoutes.vehicleSpeed = showMarkerSpeedWithConstants(
       findRoutes.defaultTime
     );
     setRoutesData((prev) => {
@@ -94,8 +98,6 @@ const TestMapComponent2 = () => {
     const { value } = e.target;
     if (!isNaN(Number(value))) setThresholdSpeed(value);
   };
-
-  console.log(routesData);
 
   return (
     <>
@@ -130,11 +132,9 @@ const TestMapComponent2 = () => {
         <label className="font-bold">Select Path:</label>
         <select
           className="px-3 py-2"
-          onChange={(e) => {
-            console.log(routesData[parseInt(e.target.value)]);
-
-            handlePathSelection(routesData[parseInt(e.target.value)]);
-          }}
+          onChange={(e) =>
+            handlePathSelection(routesData[parseInt(e.target.value)])
+          }
         >
           <option value={-1}>None</option>
           {routesData.map((pathData, index) => (
