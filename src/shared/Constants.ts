@@ -59,3 +59,22 @@ export const PUNJAB = {
   lat: 31.1471,
   lng: 75.3412
 }
+
+
+export const SURAT = {
+  lat: 21.1701,
+lng: 72.8311
+}
+
+export const INDORE = {
+  lat:22.7196, lng: 75.8577
+}
+
+export const PRAYAGRAJ = {
+  lat: 25.4358, 
+  lng: 81.8463
+}
+
+export const MP = {
+  lat: 22.9734, lng: 78.6569
+}

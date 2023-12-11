@@ -2,15 +2,19 @@
 import { useState } from "react";
 import ReactMapGL, { FullscreenControl, NavigationControl } from "react-map-gl";
 import {
-  AGRA_CORDINATE,
   BARIELY,
   DELHI_CORDINATE,
-  ETAWAH,
   GWALIOW,
+  INDORE,
   JAIPUR_CORDINATE,
   LUCKNOW,
   MAP_ACCESS_TOKEN,
+  MP,
   NANITAL,
+  PRAYAGRAJ,
+  PUNJAB,
+  RAJASTAN,
+  SURAT,
 } from "../shared/Constants";
 import DrawPath from "./DrawPath";
 import RangeInputComponent from "./RangeInputComponent";
@@ -91,8 +95,28 @@ const TestMapComponent2 = () => {
       vehicleSpeed: showMarkerSpeedWithConstants(3000),
       isSelected: false,
       coordinatesStateEnd: [
-        { lat: ETAWAH.lat, lng: ETAWAH.lng }, // Nanital
-        { lat: AGRA_CORDINATE.lat, lng: AGRA_CORDINATE.lng }, // Bariely
+        { lat: PUNJAB.lat, lng: PUNJAB.lng }, // Nanital
+        { lat: RAJASTAN.lat, lng: RAJASTAN.lng }, // Bariely
+      ],
+    },
+    {
+      pathId: 5,
+      defaultTime: 3000,
+      vehicleSpeed: showMarkerSpeedWithConstants(3000),
+      isSelected: false,
+      coordinatesStateEnd: [
+        { lat: SURAT.lat, lng: SURAT.lng }, // Nanital
+        { lat: INDORE.lat, lng: INDORE.lng }, // Bariely
+      ],
+    },
+    {
+      pathId: 6,
+      defaultTime: 3000,
+      vehicleSpeed: showMarkerSpeedWithConstants(3000),
+      isSelected: false,
+      coordinatesStateEnd: [
+        { lat: PRAYAGRAJ.lat, lng: PRAYAGRAJ.lng }, // Nanital
+        { lat: MP.lat, lng: MP.lng }, // Bariely
       ],
     },
   ]);
@@ -133,7 +157,22 @@ const TestMapComponent2 = () => {
   return (
     <>
       <div className="w-[90vw] min-h-screen m-auto">
-        <div className="flex md:flex-row flex-col justify-between items-start my-2">
+        <div className="flex md:flex-row flex-col md:justify-between md:items-start  items-center gap-2 my-2">
+          <ul className="flex items-center justify-between gap-12">
+            {vehile_list.map((vehicle) => (
+              <li
+                key={vehicle.id}
+                className="flex flex-col justify-center items-center gap-2 flex-wrap"
+              >
+                <img
+                  alt="Marker"
+                  src={vehicle?.imgURL}
+                  style={{ width: "30px", height: "30px" }}
+                />
+                <p className=" text-sm  text-center">{vehicle.message}</p>
+              </li>
+            ))}
+          </ul>
           <div className="flex flex-col gap-2">
             <div className="gap-2">
               <label className="font-bold">Threshold Speed (in km/sec):</label>{" "}
@@ -144,26 +183,29 @@ const TestMapComponent2 = () => {
                 max={500}
               />
             </div>
-            <div className="flex justify-start items-center flex-wrap gap-2">
-              <label className="font-bold">Select Path:</label>
-              <select
-                className="px-3 py-2"
-                onChange={(e) =>
-                  handlePathSelection(routesData[parseInt(e.target.value)])
-                }
-              >
-                <option value={-1}>None</option>
-                {routesData.map((pathData, index) => (
-                  <option
-                    key={`${index}_path`}
-                    value={index}
-                    className="px-3 py-1"
-                  >
-                    Path {pathData?.pathId}
-                  </option>
-                ))}
-              </select>
-            </div>
+          </div>
+        </div>
+        <div className="border-[1px] border-gray-500" />
+        <div className="flex justify-between items-center gap-2 my-2">
+          <div className="flex justify-start items-center flex-wrap gap-2">
+            <label className="font-bold">Select Path:</label>
+            <select
+              className="px-3 py-2"
+              onChange={(e) =>
+                handlePathSelection(routesData[parseInt(e.target.value)])
+              }
+            >
+              <option value={-1}>None</option>
+              {routesData.map((pathData, index) => (
+                <option
+                  key={`${index}_path`}
+                  value={index}
+                  className="px-3 py-1"
+                >
+                  Path {pathData?.pathId}
+                </option>
+              ))}
+            </select>
           </div>
           {selectedPath?.index !== -1 && (
             <div className="gap-2">
@@ -183,20 +225,6 @@ const TestMapComponent2 = () => {
               />
             </div>
           )}
-        </div>
-        <div className="">
-          <ul className="flex items-center justify-between gap-2 md:w-[60%] m-auto">
-            {vehile_list.map((vehicle) => (
-              <li key={vehicle.id} className="flex flex-col items-center">
-                <img
-                  alt="Marker"
-                  src={vehicle?.imgURL}
-                  style={{ width: "30px", height: "30px" }}
-                />
-                <p>{vehicle.message}</p>
-              </li>
-            ))}
-          </ul>
         </div>
         <ReactMapGL
           {...viewport}
