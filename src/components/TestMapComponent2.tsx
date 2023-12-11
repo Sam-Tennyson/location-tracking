@@ -52,7 +52,7 @@ const vehile_list = [
 ];
 
 const TestMapComponent2 = () => {
-  const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(150);
+  const [thresholdSpeed, setThresholdSpeed] = useState<number | string>(60);
   const [selectedPath, setSelectedPath] = useState<any>({
     index: -1,
     pathId: null,
