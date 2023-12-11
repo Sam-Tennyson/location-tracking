@@ -175,7 +175,7 @@ const TestMapComponent2 = () => {
           </ul>
           <div className="flex flex-col gap-2">
             <div className="gap-2">
-              <label className="font-bold">Threshold Speed (in km/sec):</label>{" "}
+              <label className="font-bold">Threshold Speed (in km/hr):</label>{" "}
               {thresholdSpeed}
               <RangeInputComponent
                 sliderValue={thresholdSpeed}
@@ -202,19 +202,19 @@ const TestMapComponent2 = () => {
                   value={index}
                   className="px-3 py-1"
                 >
-                  Path {pathData?.pathId}
+                  Vehicle {pathData?.pathId}
                 </option>
               ))}
             </select>
           </div>
           {selectedPath?.index !== -1 && (
             <div className="gap-2">
-              <label className="font-bold">Speed (in km/sec):</label>{" "}
+              <label className="font-bold">Speed (in km/hr):</label>{" "}
               {Number(
                 showMarkerSpeedWithConstants(
                   routesData?.[selectedPath?.index]?.defaultTime
                 )
-              )?.toFixed(7)}
+              )?.toFixed()}
               <RangeInputComponent
                 sliderValue={showMarkerSpeedWithConstants(
                   routesData?.[selectedPath?.index]?.defaultTime

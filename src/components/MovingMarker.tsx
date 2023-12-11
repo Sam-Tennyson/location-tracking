@@ -56,7 +56,7 @@ const MovingMarker = ({ routeData, route, thresholdSpeed }) => {
       currentCoordinate?.[1] !== routeData?.coordinatesStateEnd?.[1]?.lat &&
       currentCoordinate?.[0] !== routeData?.coordinatesStateEnd?.[1]?.lng
     ) {
-      return routeData?.vehicleSpeed?.toFixed(4);
+      return routeData?.vehicleSpeed?.toFixed();
     }
     return 0;
   };
@@ -92,8 +92,8 @@ const MovingMarker = ({ routeData, route, thresholdSpeed }) => {
         closeOnClick={false}
       >
         <div className="text-center p-0 text-xs">
-          Path {routeData?.pathId} <br />
-          {renderSpeed()} (km/sec)
+          Vehicle {routeData?.pathId} <br />
+          {renderSpeed()} (km/hr)
         </div>
       </Popup>
     </>
